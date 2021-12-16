@@ -302,7 +302,7 @@ public class CxScanBuilder extends Builder implements SimpleBuildStep {
         this.hideDebugLogs = hideDebugLogs;
         this.forceScan = forceScan;
         this.customFields = customFields;
-        
+
     }
 
     // Configuration fields getters
@@ -432,7 +432,7 @@ public class CxScanBuilder extends Builder implements SimpleBuildStep {
     public int getFullScanCycle() {
         return fullScanCycle;
     }
-    
+
     public Integer getPostScanActionId() {
 		return postScanActionId;
 	}
@@ -778,7 +778,7 @@ public class CxScanBuilder extends Builder implements SimpleBuildStep {
         return isThisBuildIncremental;
     }
 
-    
+
     public String getCustomFields() {
 		return customFields;
 	}
@@ -1278,15 +1278,15 @@ public class CxScanBuilder extends Builder implements SimpleBuildStep {
         ret.setCxOrigin(jenkinURL);
         log.info("  ORIGIN FROM JENKIN :: " + jenkinURL);
         log.info("  ORIGIN URL FROM JENKIN :: " + originUrl);
-        
-        ret.setPostScanActionId(getPostScanActionId());
+        if (getPostScanActionId() != null) {
+            ret.setPostScanActionId(getPostScanActionId());}
         ret.setDisableCertificateValidation(!descriptor.isEnableCertificateValidation());
         ret.setMvnPath(descriptor.getMvnPath());
         ret.setOsaGenerateJsonReport(false);
 
         ret.setCustomFields(apiFormat(getCustomFields()));
         ret.setForceScan(isForceScan());
-        
+
         //cx server
         CxConnectionDetails cxConnectionDetails = CxConnectionDetails.resolveCred(this, descriptor, run);
         ret.setUrl(cxConnectionDetails.getServerUrl().trim());
@@ -1596,7 +1596,8 @@ public class CxScanBuilder extends Builder implements SimpleBuildStep {
         log.info("avoid duplicated projects scans: " + config.isAvoidDuplicateProjectScans());
         log.info("enable Project Policy Enforcement: " + config.getEnablePolicyViolations());
         log.info("continue build when timed out: " + config.getContinueBuild());
-        log.info("post scan action: " + config.getPostScanActionId());
+        if (config.getPostScanActionId() != null){
+            log.info("post scan action: " + config.getPostScanActionId());}
         log.info("is force scan: " + config.getForceScan());
         log.info("scan level custom fields: " + config.getCustomFields());
 
@@ -2179,7 +2180,7 @@ public class CxScanBuilder extends Builder implements SimpleBuildStep {
         public void setScanTimeOutEnabled(boolean scanTimeOutEnabled) {
             this.scanTimeOutEnabled = scanTimeOutEnabled;
         }
-        
+
         public boolean getContinueBuildWhenTimedOut() {
             return continueBuildWhenTimedOut;
         }
@@ -2187,7 +2188,7 @@ public class CxScanBuilder extends Builder implements SimpleBuildStep {
         public void setContinueBuildWhenTimedOut(boolean continueBuildWhenTimedOut) {
             this.continueBuildWhenTimedOut = continueBuildWhenTimedOut;
         }
-        
+
         public boolean getGloballyDefineScanSettings() {
             return globallyDefineScanSettings;
         }
@@ -2195,7 +2196,7 @@ public class CxScanBuilder extends Builder implements SimpleBuildStep {
         public void setGloballyDefineScanSettings(boolean globallyDefineScanSettings) {
             this.globallyDefineScanSettings = globallyDefineScanSettings;
         }
-        
+
         @Nullable
         public Integer getScanTimeoutDuration() {
             return scanTimeoutDuration;
@@ -2345,60 +2346,59 @@ public class CxScanBuilder extends Builder implements SimpleBuildStep {
             }
             return FormValidation.ok();
         }
-        
-        
+
+
         /**
          * This method verify correct format for Custom Fields
-         * 
+         *
          * @param value
          * @param scaSASTProjectFullPath
          * @return
          */
         @POST
         public FormValidation doCheckCustomFields(@QueryParameter String value) {
-        	
+
         	Pattern pattern = Pattern.compile("(^([a-zA-Z0-9]*):([a-zA-Z0-9]*)+(,([a-zA-Z0-9]*):([a-zA-Z0-9]*)+)*$)");
         	Matcher match = pattern.matcher(value);
         	if(!StringUtil.isNullOrEmpty(value) && !match.find()) {
         		return FormValidation.error("Custome Fields must to have next format: key1:val1,key2:val2");
         	}
-        	
+
             return FormValidation.ok();
         }
 
         /**
          * This method verify if force scan is checked
-         * 
+         *
          * @param value
          * @param scaSASTProjectFullPath
          * @return
          */
         @POST
         public FormValidation doCheckForceScan(@QueryParameter boolean value, @QueryParameter boolean incremental) {
-        	
+
         	if(incremental && value) {
         		return FormValidation.error("Force scan and incremental scan can not be configured in pair for SAST");
         	}
-        	
+
             return FormValidation.ok();
         }
-        
+
         /**
-         * This method verifies if force scan and incremental scan both configured 
-         * 
+         * This method verifies if force scan and incremental scan both configured
+         *
          * @param value
-         * @param scaSASTProjectFullPath
          * @return
          */
         @POST
         public FormValidation doCheckIncremental(@QueryParameter boolean value,	@QueryParameter boolean forceScan) {
-        	
+
         	if(forceScan && value) {
         		forceScan = false;
-            	
+
         		return FormValidation.error("Force scan and incremental scan can not be configured in pair for SAST");
         	}
-        	
+
             return FormValidation.ok();
         }
         public FormValidation doTestScaSASTConnection(@QueryParameter final String scaSastServerUrl, @QueryParameter final String password,
@@ -2485,7 +2485,7 @@ public class CxScanBuilder extends Builder implements SimpleBuildStep {
                 scaConfig.setAccessControlUrl(scaAccessControlUrl);
                 scaConfig.setApiUrl(scaServerUrl);
                 scaConfig.setTenant(scaTenant);
-                
+
 
                 UsernamePasswordCredentials credentials = CxConnectionDetails.getCredentialsById(scaCredentialsId, item);
                 if (credentials == null) {
@@ -2566,9 +2566,9 @@ public class CxScanBuilder extends Builder implements SimpleBuildStep {
 					listBoxModel.add(new ListBoxModel.Option(
 							postAction.getName(), Integer.toString(postAction.getId())));
 				}
-			
+
 				return listBoxModel;
-			
+
 			} catch (Exception e) {
 				serverLog.error("Failed to populate post action list: " + e.toString());
 				String message = "Provide Checkmarx server credentials to see teams list";
@@ -2721,13 +2721,13 @@ public class CxScanBuilder extends Builder implements SimpleBuildStep {
                 CxConnectionDetails connDetails = CxConnectionDetails.resolveCred(!useOwnServerCredentials, serverUrl, username,
                         StringEscapeUtils.escapeHtml4(getPasswordPlainText(password)), credentialsId, isProxy, this, item);
                 commonClient = prepareLoggedInClient(connDetails);
-                
+
                 commonClient.getTeamList().stream().sorted(
-                		(firstElmnt, secondElmnt) -> 
+                		(firstElmnt, secondElmnt) ->
                 		firstElmnt.getFullName().compareToIgnoreCase(secondElmnt.fullName))
-                		.forEach(team -> 
+                		.forEach(team ->
                 		listBoxModel.add(new ListBoxModel.Option(team.getFullName(), team.getId())));
-                
+
                 return listBoxModel;
 
             } catch (Exception e) {
@@ -2932,7 +2932,7 @@ public class CxScanBuilder extends Builder implements SimpleBuildStep {
             // option.
             if (!pluginData.has(DEPENDENCY_SCAN_CONFIG_PROP)) {
                 pluginData.put(DEPENDENCY_SCAN_CONFIG_PROP, null);
-                
+
             }
             // Have put the below line to fix AB # 493 - "Globally define dependency scan settings" selection is not retained. 
             // Line pluginData.put(DEPENDENCY_SCAN_CONFIG_PROP, null); should have solved the problem but putting null is actually not working. JSONObject.NULL
