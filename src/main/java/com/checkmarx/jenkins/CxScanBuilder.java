@@ -1278,13 +1278,12 @@ public class CxScanBuilder extends Builder implements SimpleBuildStep {
         ret.setCxOrigin(jenkinURL);
         log.info("  ORIGIN FROM JENKIN :: " + jenkinURL);
         log.info("  ORIGIN URL FROM JENKIN :: " + originUrl);
-        if (getPostScanActionId() != null) {
-            ret.setPostScanActionId(getPostScanActionId());}
         ret.setDisableCertificateValidation(!descriptor.isEnableCertificateValidation());
         ret.setMvnPath(descriptor.getMvnPath());
         ret.setOsaGenerateJsonReport(false);
-
         ret.setCustomFields(apiFormat(getCustomFields()));
+        if (getPostScanActionId() != null) {
+            ret.setPostScanActionId(getPostScanActionId());}
         ret.setForceScan(isForceScan());
 
         //cx server
@@ -2352,7 +2351,6 @@ public class CxScanBuilder extends Builder implements SimpleBuildStep {
          * This method verify correct format for Custom Fields
          *
          * @param value
-         * @param scaSASTProjectFullPath
          * @return
          */
         @POST
@@ -2371,7 +2369,6 @@ public class CxScanBuilder extends Builder implements SimpleBuildStep {
          * This method verify if force scan is checked
          *
          * @param value
-         * @param scaSASTProjectFullPath
          * @return
          */
         @POST
